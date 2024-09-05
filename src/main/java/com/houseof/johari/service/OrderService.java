@@ -32,7 +32,7 @@ public class OrderService {
             order.setId(id);
             return orderRepository.save(order);
         }
-        return null;
+        return;
     }
 
     public boolean delete(String id) {
