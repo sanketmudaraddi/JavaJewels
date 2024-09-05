@@ -1,0 +1,27 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Transfer JAR to DigitalOcean Server
+        run: |
+          scp -o StrictHostKeyChecking=no /home/dev/johari-application/target/houseofJohari-0.0.1-SNAPSHOT.jar root@165.232.180.119:/opt/
+
+      - name: Restart Application on Server
+        run: |
+          ssh -o StrictHostKeyChecking=no root@165.232.180.119 'pkill -f houseofJohari || true && nohup java -jar /opt/houseofJohari-0.0.1-SNAPSHOT.jar &'
