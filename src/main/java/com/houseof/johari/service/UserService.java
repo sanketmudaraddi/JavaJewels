@@ -81,6 +81,19 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public User updateProfile(String id, User updatedUser) {
+        Optional<User> existingUser = userRepository.findById(id);
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+            user.setAddress(updatedUser.getAddress());
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+            user.setPreferredPaymentMethod(updatedUser.getPreferredPaymentMethod());
+            return userRepository.save(user);
+        }
+        return null;
+    }
+
+
 
     public boolean delete(String id) {
         if (userRepository.existsById(id)) {

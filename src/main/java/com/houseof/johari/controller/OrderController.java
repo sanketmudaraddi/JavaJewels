@@ -44,4 +44,12 @@ public class OrderController {
         boolean deleted = orderService.delete(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
+
+    // TrackOrder method
+    @GetMapping("/{id}/track")
+    public ResponseEntity<Order> trackOrder(@PathVariable String id) {
+        Order order = orderService.trackOrder(id);
+        return order != null ? ResponseEntity.ok(order) : ResponseEntity.notFound().build();
+    }
 }
+

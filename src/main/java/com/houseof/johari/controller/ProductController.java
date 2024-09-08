@@ -15,6 +15,7 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         Product savedProduct = productService.save(product);
@@ -43,5 +44,28 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable("id") String id) {
         boolean deleted = productService.delete(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
+        List<Product> products = productService.searchProducts(keyword);
+        return ResponseEntity.ok(products);
+    }
+
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<Product>> filterProducts(@RequestParam(required = false) String category,
+                                                        @RequestParam(required = false) String brand,
+                                                        @RequestParam(required = false) Double minPrice,
+                                                        @RequestParam(required = false) Double maxPrice,
+                                                        @RequestParam(required = false) String material,
+                                                        @RequestParam(required = false) String size,
+                                                        @RequestParam(required = false) List<String> colors,
+                                                        @RequestParam(required = false) Boolean inStock) {
+        // Call the filter method in the service with all parameters
+        List<Product> products = productService.filterProducts(category, brand, minPrice, maxPrice, material, size, colors, inStock);
+
+        // Return the filtered products as a response
+        return ResponseEntity.ok(products);
     }
 }

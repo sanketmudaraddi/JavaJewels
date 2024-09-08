@@ -5,6 +5,7 @@ import com.houseof.johari.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +34,26 @@ public class OrderService {
             return orderRepository.save(order);
         }
         return null;
+    }
+
+    public Order trackOrder(String id) {
+        Order order = findById(id);
+        if (order != null) {
+            // Fetch the necessary tracking information from the order
+            String orderStatus = order.getOrderStatus();
+            LocalDateTime deliveryDate = order.getDeliveryDate();
+            String trackingNumber = order.getTrackingNumber();
+            String shippingAddress = order.getShippingAddress();
+
+            // Set the tracking information in the order object
+            order.setOrderStatus(orderStatus);
+            order.setDeliveryDate(deliveryDate);
+            order.setTrackingNumber(trackingNumber);
+            order.setShippingAddress(shippingAddress);
+
+            return order;
+        }
+        return null; // Order not found
     }
 
     public boolean delete(String id) {
