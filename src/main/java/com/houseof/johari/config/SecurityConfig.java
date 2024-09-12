@@ -55,9 +55,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable() // Disable CSRF protection as it is not needed for stateless JWT authentication
                 .authorizeRequests()
                 .antMatchers("/authenticate", "/login", "/register", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/refresh-token").permitAll()
+                .antMatchers("/public/**").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN") // Only admin can access /admin/** endpoints
                 .antMatchers("/user/**").hasAnyRole("USER", "ADMIN") // Both user and admin can access /user/** endpoints// Allow access to these endpoints without authentication
-                .anyRequest().authenticated() // All other requests require authentication
+                 // All other requests require authentication
                 .and()
                 .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and() // Handle authentication exceptions
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // Use stateless session management
@@ -69,7 +70,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8082")); // Allow the specified origin
         configuration.setAllowedOrigins(Arrays.asList("*")); // Allow all origins
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")); // Allow common HTTP methods
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With")); // Allow common headers
