@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 // Define the RestController for handling authentication-related requests
 @RestController
@@ -57,8 +58,15 @@ public class AuthController {
             final String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
 
             return ResponseEntity.ok(new JwtResponse(token, refreshToken));
+        } catch (DisabledException e) {
+            // If the user account is disabled
+            return ResponseEntity.badRequest().body(Map.of("error", "USER_DISABLED"));
+        } catch (BadCredentialsException e) {
+            // If the credentials are invalid
+            return ResponseEntity.badRequest().body(Map.of("error", "INVALID_CREDENTIALS"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Login failed: " + e.getMessage());
+            // Catch all other errors
+            return ResponseEntity.badRequest().body(Map.of("error", "LOGIN_FAILED"));
         }
     }
 
