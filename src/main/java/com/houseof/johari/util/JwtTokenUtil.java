@@ -17,7 +17,6 @@ public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -2550185165626007488L;
 
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
-    public static final long REFRESH_TOKEN_VALIDITY = 30 * 24 * 60 * 60; // 30 days
 
     @Value("${jwt.secret}")
     private String secret;
@@ -53,10 +52,7 @@ public class JwtTokenUtil implements Serializable {
         return doGenerateToken(userDetails.getUsername(), JWT_TOKEN_VALIDITY);
     }
 
-    // Generate refresh token for user
-    public String generateRefreshToken(UserDetails userDetails) {
-        return doGenerateToken(userDetails.getUsername(), REFRESH_TOKEN_VALIDITY);
-    }
+
 
     private String doGenerateToken(String subject, long validity) {
         return Jwts.builder()

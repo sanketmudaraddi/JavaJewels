@@ -54,7 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors().configurationSource(corsConfigurationSource()).and() // Enable CORS with custom configuration
                 .csrf().disable() // Disable CSRF protection as it is not needed for stateless JWT authentication
                 .authorizeRequests()
-                .antMatchers("/authenticate", "/login", "/register", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/refresh-token").permitAll()
+                .antMatchers("/authenticate", "/login", "/register", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .antMatchers("/public/**").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN") // Only admin can access /admin/** endpoints
                 .antMatchers("/user/**").hasAnyRole("USER", "ADMIN") // Both user and admin can access /user/** endpoints// Allow access to these endpoints without authentication

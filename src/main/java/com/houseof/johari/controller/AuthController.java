@@ -19,6 +19,7 @@ import java.util.Map;
 
 // Define the RestController for handling authentication-related requests
 @RestController
+@RequestMapping("/api/auth")
 public class AuthController {
 
     // Autowire necessary dependencies
@@ -35,14 +36,46 @@ public class AuthController {
     private UserService userService;
 
     // Handler for user registration
+
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<?> sendOtp(@RequestBody User user) {
+        User existingUser = userService.findByPhoneNumber(user.getPhoneNumber());
+        if (existingUser != null && existingUser.isPhoneVerified()) {
+            return ResponseEntity.badRequest().body("Phone number already verified.");
+        }
+
+        // Generate OTP and send it to the phone number
+        String otp = userService.generateOTP(user);
+        return ResponseEntity.ok("OTP sent to " + user.getPhoneNumber());
+    }
+
+    // Step 2: Verify OTP
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestParam String phoneNumber, @RequestParam String otp) {
+        boolean isVerified = userService.verifyOTP(phoneNumber, otp);
+        if (isVerified) {
+            return ResponseEntity.ok("Phone number verified successfully.");
+        }
+        return ResponseEntity.badRequest().body("Invalid OTP or OTP expired.");
+    }
+
+    // Step 3: Register a new user after OTP verification
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        try {
-            User registeredUser = userService.save(user);
-            return ResponseEntity.ok(registeredUser);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("User registration failed: " + e.getMessage());
+        User existingUser = userService.findByPhoneNumber(user.getPhoneNumber());
+        if (existingUser == null || !existingUser.isPhoneVerified()) {
+            return ResponseEntity.badRequest().body("Phone number not verified.");
         }
+
+        // Complete the registration process
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setPassword(user.getPassword());  // You should encode the password
+        userService.save(existingUser);
+
+        return ResponseEntity.ok("User registered successfully.");
     }
 
     // Handler for user login and token generation
@@ -55,9 +88,8 @@ public class AuthController {
             // Load user details and generate tokens
             final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
             final String token = jwtTokenUtil.generateToken(userDetails);
-            final String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
 
-            return ResponseEntity.ok(new JwtResponse(token, refreshToken));
+            return ResponseEntity.ok(new JwtResponse(token));
         } catch (DisabledException e) {
             // If the user account is disabled
             return ResponseEntity.badRequest().body(Map.of("error", "USER_DISABLED"));
@@ -67,31 +99,6 @@ public class AuthController {
         } catch (Exception e) {
             // Catch all other errors
             return ResponseEntity.badRequest().body(Map.of("error", "LOGIN_FAILED"));
-        }
-    }
-
-    // Handler for refreshing the authentication token
-    @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshAuthenticationToken(@RequestBody String refreshToken) {
-        try {
-            // Check if the refresh token has expired
-            if (jwtTokenUtil.isTokenExpired(refreshToken)) {
-                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Refresh token has expired");
-            }
-
-            // Extract username from the refresh token and load user details
-            String username = jwtTokenUtil.getUsernameFromToken(refreshToken);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            // Validate the refresh token and generate a new access token
-            if (userDetails != null && jwtTokenUtil.validateToken(refreshToken, userDetails)) {
-                String newToken = jwtTokenUtil.generateToken(userDetails);
-                return ResponseEntity.ok(new JwtResponse(newToken, refreshToken));
-            } else {
-                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Invalid refresh token");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Token refresh failed: " + e.getMessage());
         }
     }
 

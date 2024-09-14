@@ -18,8 +18,13 @@ public class User {
     private String username;
     private String password;
     private String role;
-    private String fullName;
+    private String email;
+    private String firstName;
+    private String lastName;
     private String phoneNumber;
+    private boolean phoneVerified; // to check if phone is verified
+    private String otp;
+    private LocalDateTime otpExpiry;
     private String address;
     private List<String> wishLlistProductsIds; // List of product IDs in user's wishlist
     private List<String> orderHistory; // List of order IDs
