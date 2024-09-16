@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.Map;
 
 // Define the RestController for handling authentication-related requests
@@ -40,34 +41,40 @@ public class AuthController {
 
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendOtp(@RequestBody User user) {
+        Map<String, String>response = new HashMap<>();
         User existingUser = userService.findByPhoneNumber(user.getPhoneNumber());
         if (existingUser != null && existingUser.isPhoneVerified()) {
-            return ResponseEntity.badRequest().body("Phone number already verified.");
+            response.put("error", "Phone number already verified.");
+            return ResponseEntity.badRequest().body(response);
         }
 
         // Generate OTP and send it to the phone number
         String otp = userService.generateOTP(user);
-        return ResponseEntity.ok("OTP sent to " + user.getPhoneNumber());
+        response.put("message", "OTP sent to " + user.getPhoneNumber());
+        return ResponseEntity.ok(response);
     }
-
     // Step 2: Verify OTP
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestParam String phoneNumber, @RequestParam String otp) {
+        Map<String, String> response = new HashMap<>();
         boolean isVerified = userService.verifyOTP(phoneNumber, otp);
         if (isVerified) {
-            return ResponseEntity.ok("Phone number verified successfully.");
+            response.put("message", "Phone number verified successfully.");
+            return ResponseEntity.ok(response);
         }
-        return ResponseEntity.badRequest().body("Invalid OTP or OTP expired.");
+        response.put("error", "Invalid OTP or OTP expired.");
+        return ResponseEntity.badRequest().body(response);
     }
 
     // Step 3: Register a new user after OTP verification
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<Map<String, String>> register(@RequestBody User user) {
+        Map<String, String> response = new HashMap<>();
         User existingUser = userService.findByPhoneNumber(user.getPhoneNumber());
         if (existingUser == null || !existingUser.isPhoneVerified()) {
-            return ResponseEntity.badRequest().body("Phone number not verified.");
+            response.put("error", "Phone number not verified.");
+            return ResponseEntity.badRequest().body(response);
         }
-
         // Complete the registration process
         existingUser.setFirstName(user.getFirstName());
         existingUser.setLastName(user.getLastName());
@@ -75,7 +82,8 @@ public class AuthController {
         existingUser.setPassword(user.getPassword());  // You should encode the password
         userService.save(existingUser);
 
-        return ResponseEntity.ok("User registered successfully.");
+        response.put("message", "User registered successfully.");
+        return ResponseEntity.ok(response);
     }
 
     // Handler for user login and token generation
@@ -105,33 +113,40 @@ public class AuthController {
     // Handler for forgot password request
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        Map<String, String> response = new HashMap<>();
         // Step 1: Validate user exists
         User user = userService.findByUsername(request.getUsername());
         if (user == null) {
-            return ResponseEntity.badRequest().body("User not found");
+            response.put("error", "User not found");
+            return ResponseEntity.badRequest().body(response);
         }
 
         // Step 2: Generate reset token and expiration
         String resetToken = userService.generateResetToken(user);
 
         // Return the reset token to the user
-        return ResponseEntity.ok("Your reset token is: " + resetToken);
+        response.put("message", "Your reset token is: " + resetToken);
+        return ResponseEntity.ok(response);
     }
 
     // Handler for resetting the password
+
+    // Handler for resetting the password
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody ResetPasswordRequest request) {
+        Map<String, String> response = new HashMap<>();
         // Step 3: Validate reset token
         boolean validToken = userService.validateResetToken(request.getToken(), request.getUsername());
         if (!validToken) {
-            return ResponseEntity.badRequest().body("Invalid or expired reset token");
+            response.put("error", "Invalid or expired reset token");
+            return ResponseEntity.badRequest().body(response);
         }
         // Step 4: Update user password
         userService.updatePassword(request.getUsername(), request.getNewPassword());
 
-        return ResponseEntity.ok("Password reset successful");
+        response.put("message", "Password reset successful");
+        return ResponseEntity.ok(response);
     }
-
 
     // Helper method to authenticate user credentials
     private void authenticate(String username, String password) throws Exception {
