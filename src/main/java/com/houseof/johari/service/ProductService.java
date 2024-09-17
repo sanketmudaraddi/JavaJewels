@@ -1,7 +1,9 @@
 package com.houseof.johari.service;
 
 import com.houseof.johari.model.Product;
+import com.houseof.johari.model.SearchHistory;
 import com.houseof.johari.repository.ProductRepository;
+import com.houseof.johari.repository.SearchHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +30,9 @@ public class ProductService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private SearchHistoryRepository searchHistoryRepository;
 
 @PreAuthorize("hasRole('ADMIN')")
     public Product save(Product product) {
@@ -67,14 +73,26 @@ public class ProductService {
         return false;
     }
 
-    public List<Product> searchProducts(String keyword) {
+    public List<Product> searchProducts(String userId, String keyword) {
+        // Save search history
+        SearchHistory history = new SearchHistory();
+        history.setUserId(userId);
+        history.setSearchTerm(keyword);
+        history.setTimestamp(LocalDateTime.now());
+        searchHistoryRepository.save(history);
+
+        // Perform search
         Query query = new Query();
         query.addCriteria(Criteria.where("name").regex(keyword, "i"));
         return mongoTemplate.find(query, Product.class);
     }
 
+    public List<SearchHistory> getRecentSearches(String userId) {
+        return searchHistoryRepository.findTop10ByUserIdOrderByTimestampDesc(userId);
+    }
 
-    public List<Product> filterProducts(String category, String brand, Double minPrice, Double maxPrice, String material, String size, List<String> colors, Boolean inStock) {
+
+    public List<Product> filterProducts(String category, String brand, Double minPrice, Double maxPrice, String material, String size, List<String> colors, Boolean inStock, String priceToggle) {
         Query query = new Query();
 
         // Check if a category filter is provided and add it to the query
@@ -115,6 +133,27 @@ public class ProductService {
         // Check if the in-stock filter is provided and add it to the query
         if (inStock != null) {
             query.addCriteria(Criteria.where("inStock").is(inStock));
+        }
+
+        // Price filter with toggle
+        if (priceToggle != null) {
+            switch (priceToggle) {
+                case "low":
+                    if (minPrice != null) {
+                        query.addCriteria(Criteria.where("price").gte(minPrice));
+                    }
+                    break;
+                case "high":
+                    if (maxPrice != null) {
+                        query.addCriteria(Criteria.where("price").lte(maxPrice));
+                    }
+                    break;
+                case "range":
+                    if (minPrice != null && maxPrice != null) {
+                        query.addCriteria(Criteria.where("price").gte(minPrice).lte(maxPrice));
+                    }
+                    break;
+            }
         }
 
         // Execute the query and return the filtered list of products

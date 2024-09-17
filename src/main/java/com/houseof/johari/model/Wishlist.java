@@ -12,5 +12,6 @@ public class Wishlist {
     @Id
     private String id;
     private String userId; // User who owns the wishlist
+    private String wishlistName;  // Name of the wishlist (e.g., "wishlist 1", "wishlist 2")
     private List<String> productIds; // List of product IDs in the wishlist
 }

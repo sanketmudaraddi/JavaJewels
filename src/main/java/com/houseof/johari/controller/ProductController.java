@@ -1,6 +1,7 @@
 package com.houseof.johari.controller;
 
 import com.houseof.johari.model.Product;
+import com.houseof.johari.model.SearchHistory;
 import com.houseof.johari.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -47,9 +48,15 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
-        List<Product> products = productService.searchProducts(keyword);
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam String userId, @RequestParam String keyword) {
+        List<Product> products = productService.searchProducts(userId, keyword);
         return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/recent-searches")
+    public ResponseEntity<List<SearchHistory>> getRecentSearches(@RequestParam String userId) {
+        List<SearchHistory> recentSearches = productService.getRecentSearches(userId);
+        return ResponseEntity.ok(recentSearches);
     }
 
 
@@ -61,9 +68,10 @@ public class ProductController {
                                                         @RequestParam(required = false) String material,
                                                         @RequestParam(required = false) String size,
                                                         @RequestParam(required = false) List<String> colors,
-                                                        @RequestParam(required = false) Boolean inStock) {
+                                                        @RequestParam(required = false) Boolean inStock,
+                                                        @RequestParam(required = false) String priceToogle) {
         // Call the filter method in the service with all parameters
-        List<Product> products = productService.filterProducts(category, brand, minPrice, maxPrice, material, size, colors, inStock);
+        List<Product> products = productService.filterProducts(category, brand, minPrice, maxPrice, material, size, colors, inStock, priceToogle);
 
         // Return the filtered products as a response
         return ResponseEntity.ok(products);

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class WishlistService {
@@ -13,34 +14,43 @@ public class WishlistService {
     @Autowired
     private WishlistRepository wishlistRepository;
 
-    public Wishlist getWishlistByUserId(String userId) {
-        return wishlistRepository.findByUserId(userId);
+    // Get all wishlists for a user
+    public List<Wishlist> getWishlistsByUserId(String userId) {
+        return wishlistRepository.findAllByUserId(userId);
     }
 
-    public Wishlist addItemToWishlist(String userId, String productId) {
-        Wishlist wishlist = wishlistRepository.findByUserId(userId);
+    // Get a specific wishlist by userId and wishlistName
+    public Wishlist getWishlistByUserIdAndName(String userId, String wishlistName) {
+        return wishlistRepository.findByUserIdAndWishlistName(userId, wishlistName);
+    }
+
+    // Create a new wishlist
+    public Wishlist createWishlist(String userId, String wishlistName) {
+        Wishlist wishlist = new Wishlist();
+        wishlist.setUserId(userId);
+        wishlist.setWishlistName(wishlistName);
+        wishlist.setProductIds(new ArrayList<>());  // Initialize empty product list
+        return wishlistRepository.save(wishlist);
+    }
+
+    // Add item to an existing wishlist
+    public Wishlist addItemToWishlist(String userId, String wishlistName, String productId) {
+        Wishlist wishlist = wishlistRepository.findByUserIdAndWishlistName(userId, wishlistName);
         if (wishlist == null) {
-            // Create a new wishlist if it doesn't exist
-            wishlist = new Wishlist();
-            wishlist.setUserId(userId);
+            throw new IllegalArgumentException("Wishlist not found");
         }
-        // Initialize productIds list if it's null
-        if (wishlist.getProductIds() == null) {
-            wishlist.setProductIds(new ArrayList<>());
-        }
-        // Add productId to the list if it's not already present
         if (!wishlist.getProductIds().contains(productId)) {
             wishlist.getProductIds().add(productId);
         }
         return wishlistRepository.save(wishlist);
     }
 
-    public Wishlist removeItemFromWishlist(String userId, String productId) {
-        Wishlist wishlist = wishlistRepository.findByUserId(userId);
+
+    // Remove item from an existing wishlist
+    public Wishlist removeItemFromWishlist(String userId, String wishlistName, String productId) {
+        Wishlist wishlist = wishlistRepository.findByUserIdAndWishlistName(userId, wishlistName);
         if (wishlist != null && wishlist.getProductIds() != null) {
-            // Remove productId from the list if it exists
             wishlist.getProductIds().remove(productId);
-            // Save the updated wishlist
             wishlistRepository.save(wishlist);
         }
         return wishlist;
