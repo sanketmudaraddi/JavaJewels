@@ -6,5 +6,6 @@ import lombok.Data;
 public class ResetPasswordRequest {
     private String token;
     private String username;
+    private String email;  // Change from 'username' to 'email'
     private String newPassword;
 }

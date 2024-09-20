@@ -14,7 +14,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,54 +36,53 @@ public class AuthController {
     private UserService userService;
 
     // Handler for user registration
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, String>> register(@RequestBody User user) {
+        Map<String, String> response = new HashMap<>();
+        User existingUser = userService.findByEmail(user.getEmail());
+        if (existingUser != null) {
+            response.put("error", "Email already registered.");
+            return ResponseEntity.badRequest().body(response);
+        }
+        // Complete the registration process
+        user.setPassword(user.getPassword());  // You should encode the password
+        userService.save(user);
 
+        response.put("message", "User registered successfully.");
+        return ResponseEntity.ok(response);
+    }
 
+    // Commented out the OTP-related feature for now
+    /*
+    // Handler for sending OTP
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendOtp(@RequestBody User user) {
-        Map<String, String>response = new HashMap<>();
-        User existingUser = userService.findByPhoneNumber(user.getPhoneNumber());
+        Map<String, String> response = new HashMap<>();
+        User existingUser = userService.findByEmail(user.getEmail());
         if (existingUser != null && existingUser.isPhoneVerified()) {
-            response.put("error", "Phone number already verified.");
+            response.put("error", "Email already verified.");
             return ResponseEntity.badRequest().body(response);
         }
 
-        // Generate OTP and send it to the phone number
+        // Generate OTP and send it via email (or other method)
         String otp = userService.generateOTP(user);
-        response.put("message", "OTP sent to " + user.getPhoneNumber());
+        response.put("message", "OTP sent to " + user.getEmail());
         return ResponseEntity.ok(response);
     }
+
     // Step 2: Verify OTP
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestParam String phoneNumber, @RequestParam String otp) {
+    public ResponseEntity<?> verifyOtp(@RequestParam String email, @RequestParam String otp) {
         Map<String, String> response = new HashMap<>();
-        boolean isVerified = userService.verifyOTP(phoneNumber, otp);
+        boolean isVerified = userService.verifyOTP(email, otp);
         if (isVerified) {
-            response.put("message", "Phone number verified successfully.");
+            response.put("message", "Email verified successfully.");
             return ResponseEntity.ok(response);
         }
         response.put("error", "Invalid OTP or OTP expired.");
         return ResponseEntity.badRequest().body(response);
     }
-
-    // Step 3: Register a new user after OTP verification
-    @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> register(@RequestBody User user) {
-        Map<String, String> response = new HashMap<>();
-        User existingUser = userService.findByPhoneNumber(user.getPhoneNumber());
-        if (existingUser == null || !existingUser.isPhoneVerified()) {
-            response.put("error", "Phone number not verified.");
-            return ResponseEntity.badRequest().body(response);
-        }
-        // Complete the registration process
-        existingUser.setFirstName(user.getFirstName());
-        existingUser.setLastName(user.getLastName());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setPassword(user.getPassword());  // You should encode the password
-        userService.save(existingUser);
-
-        response.put("message", "User registered successfully.");
-        return ResponseEntity.ok(response);
-    }
+    */
 
     // Handler for user login and token generation
     @PostMapping("/login")
@@ -115,7 +113,7 @@ public class AuthController {
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         Map<String, String> response = new HashMap<>();
         // Step 1: Validate user exists
-        User user = userService.findByUsername(request.getUsername());
+        User user = userService.findByEmail(request.getEmail());
         if (user == null) {
             response.put("error", "User not found");
             return ResponseEntity.badRequest().body(response);
@@ -130,19 +128,17 @@ public class AuthController {
     }
 
     // Handler for resetting the password
-
-    // Handler for resetting the password
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(@RequestBody ResetPasswordRequest request) {
         Map<String, String> response = new HashMap<>();
         // Step 3: Validate reset token
-        boolean validToken = userService.validateResetToken(request.getToken(), request.getUsername());
+        boolean validToken = userService.validateResetToken(request.getToken(), request.getEmail());
         if (!validToken) {
             response.put("error", "Invalid or expired reset token");
             return ResponseEntity.badRequest().body(response);
         }
         // Step 4: Update user password
-        userService.updatePassword(request.getUsername(), request.getNewPassword());
+        userService.updatePassword(request.getEmail(), request.getNewPassword());
 
         response.put("message", "Password reset successful");
         return ResponseEntity.ok(response);

@@ -63,4 +63,14 @@ public class OrderService {
         }
         return false;
     }
+
+    public List<Order> getCurrentOrders(String userId) {
+        // Implement logic to retrieve current orders
+        return orderRepository.findCurrentOrdersByUserId(userId); // Implement this in your repository
+    }
+
+    public List<Order> getPastOrders(String userId) {
+        // Implement logic to retrieve past orders
+        return orderRepository.findPastOrdersByUserId(userId); // Implement this in your repository
+    }
 }

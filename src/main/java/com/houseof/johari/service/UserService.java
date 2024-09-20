@@ -1,6 +1,8 @@
 package com.houseof.johari.service;
 
 import com.houseof.johari.model.User;
+import com.houseof.johari.model.UserAccount;
+import com.houseof.johari.repository.UserAccountRepository;
 import com.houseof.johari.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +23,11 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+
     public String generateOTP(User user) {
-    //generate random 6 digit number
+        //generate random 6 digit number
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
         user.setOtp(otp);
         user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));  // OTP is valid for 10 minutes
@@ -57,7 +62,10 @@ public class UserService {
         // Use the repository to find and return the user
         return userRepository.findByUsername(username);
     }
-
+// Method to find a user by email
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 
     // Method to find a user by their ID
     public User findById(String id) {
@@ -130,5 +138,44 @@ public class UserService {
         return false;
     }
 
+    public UserAccount findByAccountId(String userId) {
+        return userAccountRepository.findById(userId).orElse(null);
+    }
 
+    public UserAccount updateUserAccount(String userId, UserAccount updatedAccount) {
+        updatedAccount.setAccountId(userId); // Ensure the ID remains the same
+        return userAccountRepository.save(updatedAccount);
+    }
+
+    public List<String> getUserAddresses(String userId) {
+        UserAccount userAccount = findByAccountId(userId);
+        return userAccount != null ? userAccount.getAddresses() : null;
+    }
+
+    public String addNewAddress(String userId, String newAddress) {
+        UserAccount userAccount = findByAccountId(userId);
+        if (userAccount != null) {
+            userAccount.getAddresses().add(newAddress);
+            userAccountRepository.save(userAccount);
+            return newAddress; // Return the new address added
+        }
+        return null;
+    }
+
+    public void editAddress(String userId, String addressId, String updatedAddress) {
+        UserAccount userAccount = findByAccountId(userId);
+        if (userAccount != null && userAccount.getAddresses().contains(addressId)) {
+            int index = userAccount.getAddresses().indexOf(addressId);
+            userAccount.getAddresses().set(index, updatedAddress);
+            userAccountRepository.save(userAccount);
+        }
+    }
+
+    public void deleteAddress(String userId, String addressId) {
+        UserAccount userAccount = findByAccountId(userId);
+        if (userAccount != null) {
+            userAccount.getAddresses().remove(addressId);
+            userAccountRepository.save(userAccount);
+        }
+    }
 }

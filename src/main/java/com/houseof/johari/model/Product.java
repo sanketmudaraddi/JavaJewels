@@ -15,6 +15,8 @@ public class Product {
     private String description;
     private double price;
     private String category;
+    private String isBestSeller;
+    private boolean bestSeller;
     private String brand;
     private String imageUrl;
     private double rating; // Average rating based on user reviews
@@ -26,6 +28,10 @@ public class Product {
     private List<String> colors; // Available colors
     private boolean inStock; // Availability status
     private List<String> tags; // e.g., trending, bestseller
+    private boolean isNewArrival;
+    private boolean hasOffer;
+    private String recentlyViewed;
+
     // Getters and setters
     // Constructor
 }
