@@ -14,8 +14,8 @@ public class Product {
     private String name;
     private String description;
     private double price;
+    private String gender;
     private String category;
-    private String isBestSeller;
     private boolean bestSeller;
     private String brand;
     private String imageUrl;
@@ -29,7 +29,9 @@ public class Product {
     private boolean inStock; // Availability status
     private List<String> tags; // e.g., trending, bestseller
     private boolean isNewArrival;
+    private String occasion;
     private boolean hasOffer;
+    private double discountPrice; // Discounted price in case of an offer
     private String recentlyViewed;
 
     // Getters and setters

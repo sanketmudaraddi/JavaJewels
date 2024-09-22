@@ -17,7 +17,6 @@ public class ProductController {
     private ProductService productService;
 
 
-
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         Product savedProduct = productService.save(product);
@@ -76,5 +75,53 @@ public class ProductController {
 
         // Return the filtered products as a response
         return ResponseEntity.ok(products);
+    }
+    // Get products by category
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable String category) {
+        List<Product> products = productService.getProductsByCategory(category);
+        return ResponseEntity.ok(products);
+    }
+
+    // Get products by category and gender
+    @GetMapping("/category/{category}/gender/{gender}")
+    public ResponseEntity<List<Product>> getProductsByCategoryAndGender(@PathVariable String category, @PathVariable String gender) {
+        List<Product> products = productService.getProductsByCategoryAndGender(category, gender);
+        return ResponseEntity.ok(products);
+    }
+
+    // Get products by category and price
+    @GetMapping("/category/{category}/price/{price}")
+    public ResponseEntity<List<Product>> getProductsByCategoryAndPrice(@PathVariable String category, @PathVariable double price) {
+        List<Product> products = productService.getProductsByCategoryAndPrice(category, price);
+        return ResponseEntity.ok(products);
+    }
+
+    // Get products by category and material
+    @GetMapping("/category/{category}/material/{material}")
+    public ResponseEntity<List<Product>> getProductsByCategoryAndMaterial(@PathVariable String category, @PathVariable String material) {
+        List<Product> products = productService.getProductsByCategoryAndMaterial(category, material);
+        return ResponseEntity.ok(products);
+    }
+
+    // Get products by category and occasion
+    @GetMapping("/category/{category}/occasion/{occasion}")
+    public ResponseEntity<List<Product>> getProductsByCategoryAndOccasion(@PathVariable String category, @PathVariable String occasion) {
+        List<Product> products = productService.getProductsByCategoryAndOccasion(category, occasion);
+        return ResponseEntity.ok(products);
+    }
+
+    // Get Best Sellers
+    @GetMapping("/best-sellers")
+    public ResponseEntity<List<Product>> getBestSellers() {
+        List<Product> bestSellers = productService.getBestSellers();
+        return ResponseEntity.ok(bestSellers);
+    }
+
+    // Get Products with Offers
+    @GetMapping("/offers")
+    public ResponseEntity<List<Product>> getProductsWithOffers() {
+        List<Product> productsWithOffers = productService.getProductsWithOffers();
+        return ResponseEntity.ok(productsWithOffers);
     }
 }

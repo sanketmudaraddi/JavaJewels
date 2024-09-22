@@ -159,4 +159,55 @@ public class ProductService {
         // Execute the query and return the filtered list of products
         return mongoTemplate.find(query, Product.class);
     }
+
+    //Get products by category
+    public List<Product> getProductsByCategory(String category) {
+        return productRepository.findByCategory(category);
+    }
+
+    // Get products by category and gender
+    public List<Product> getProductsByCategoryAndGender(String category, String gender) {
+        return productRepository.findByCategoryAndGender(category, gender);
+    }
+
+    // Get products by category and price (under a certain price)
+    public List<Product> getProductsByCategoryAndPrice(String category, double price) {
+        return productRepository.findByCategoryAndPriceLessThanEqual(category, price);
+    }
+
+    // Get products by category and material
+    public List<Product> getProductsByCategoryAndMaterial(String category, String material) {
+        return productRepository.findByCategoryAndMaterial(category, material);
+    }
+
+    // Get products by category and occasion
+    public List<Product> getProductsByCategoryAndOccasion(String category, String occasion) {
+        return productRepository.findByCategoryAndOccasion(category, occasion);
+    }
+
+    // Get products by combining multiple filters
+    public List<Product> getProductsByMultipleFilters(String category, String gender, Double price, String material, String occasion) {
+        // This is a simplified example combining category, gender, price, material, and occasion
+        if (price != null && gender != null) {
+            return productRepository.findByCategoryAndGenderAndPriceLessThanEqualAndMaterialAndOccasion(
+                    category, gender, price, material, occasion);
+        } else if (price != null) {
+            return productRepository.findByCategoryAndPriceLessThanEqual(category, price);
+        } else if (gender != null) {
+            return productRepository.findByCategoryAndGender(category, gender);
+        } else {
+            return productRepository.findByCategory(category);
+        }
+    }
+
+    // Get all Best Seller products
+    public List<Product> getBestSellers() {
+        return productRepository.findByBestSellerTrue();
+    }
+
+    // Get all products with Offers
+    public List<Product> getProductsWithOffers() {
+        return productRepository.findByHasOfferTrue();
+    }
+
 }
