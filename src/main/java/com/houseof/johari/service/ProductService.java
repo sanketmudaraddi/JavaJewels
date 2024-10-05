@@ -1,5 +1,6 @@
 package com.houseof.johari.service;
 
+import com.houseof.johari.model.PriceRange;
 import com.houseof.johari.model.Product;
 import com.houseof.johari.model.SearchHistory;
 import com.houseof.johari.repository.ProductRepository;
@@ -17,9 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 @Service
@@ -34,7 +33,7 @@ public class ProductService {
     @Autowired
     private SearchHistoryRepository searchHistoryRepository;
 
-@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Product save(Product product) {
         return productRepository.save(product);
     }
@@ -200,14 +199,53 @@ public class ProductService {
         }
     }
 
-    // Get all Best Seller products
-    public List<Product> getBestSellers() {
-        return productRepository.findByBestSellerTrue();
-    }
+//    // Get all Best Seller products
+//    public List<Product> getBestSellers() {
+//        return productRepository.findByBestSellerTrue();
+//    }
 
     // Get all products with Offers
     public List<Product> getProductsWithOffers() {
         return productRepository.findByHasOfferTrue();
     }
+    // Fetch recently viewed products
+    public List<Product> getRecentlyViewedProducts() {
+        // Implement logic to fetch recently viewed products
+        return productRepository.findRecentlyViewed();
+    }
 
+    // Fetch new arrivals
+    public List<Product> getNewArrivals() {
+        // Implement logic to fetch new arrival products
+        return productRepository.findNewArrivals();
+    }
+
+    // Fetch best sellers
+    public List<Product> getBestSellers() {
+        // Implement logic to fetch best sellers
+        return productRepository.findBestSellers();
+    }
+
+    // Fetch price ranges
+    public List<PriceRange> getPriceRanges() {
+        // Implement logic to return available price ranges
+        return Arrays.asList(
+                new PriceRange("Under 5000", "price-1"),
+                new PriceRange("Under 10000", "price-2"),
+                new PriceRange("Under 15000", "price-3")
+        );
+    }
+
+    // Fetch shop collections
+    public List<Collection> getShopCollections() {
+        // Implement logic to fetch collections
+        return productRepository.findCollections();
+    }
+
+    // Fetch featured products for home page
+    public List<Product> getFeaturedProducts() {
+        // Implement logic to fetch featured products
+        return productRepository.findFeaturedProducts();
+    }
 }
+

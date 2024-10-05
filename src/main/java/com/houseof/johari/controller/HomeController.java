@@ -1,57 +1,64 @@
 package com.houseof.johari.controller;
 
+import com.houseof.johari.model.Category;
 import com.houseof.johari.model.HomeResponse;
+import com.houseof.johari.model.PriceRange;
+import com.houseof.johari.model.Product;
+import com.houseof.johari.service.CategoryService;
+import com.houseof.johari.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/home")
 public class HomeController {
 
+    @Autowired
+    private CategoryService categoryService; // Service to handle categories
+    @Autowired
+    private ProductService productService;   // Service to handle products
+
+    // Home page with all sections
     @GetMapping
-    public ResponseEntity<HomeResponse> getHome() {
-        HomeResponse homeResponse = new HomeResponse();
+    public ResponseEntity<Map<String, Object>> getHomePage() {
+        Map<String, Object> response = new HashMap<>();
 
-        // URLs for each category, these would be endpoints to fetch actual data
-        homeResponse.setShopByCategoriesLinks(List.of(
-                "/api/categories/all",
-                "/api/categories/rings",
-                "/api/categories/necklaces",
-                "/api/categories/bracelets",
-                "/api/categories/earrings",
-                "/api/categories/others"
-        ));
+        // Fetch categories
+        List<Category> categories = categoryService.getAllCategories();
+        response.put("shopByCategories", categories);
 
-        // URLs for recently viewed products (you can fetch actual products based on user ID)
-        homeResponse.setRecentlyViewedLinks(List.of(
-                "/api/recently-viewed/1",
-                "/api/recently-viewed/2",
-                "/api/recently-viewed/3"
-        ));
+        // Fetch recently viewed products
+        List<Product> recentlyViewed = productService.getRecentlyViewedProducts();
+        response.put("recentlyViewed", recentlyViewed);
 
-        // URL to fetch new arrivals
-        homeResponse.setNewArrivalsLink("/api/products/new-arrivals");
+        // Fetch new arrivals
+        List<Product> newArrivals = productService.getNewArrivals();
+        response.put("newArrivals", newArrivals);
 
-        // URL to fetch best sellers
-        homeResponse.setBestSellersLink("/api/products/best-sellers");
+        // Fetch best sellers
+        List<Product> bestSellers = productService.getBestSellers();
+        response.put("bestSellers", bestSellers);
 
-        // URLs for shopping by price
-        homeResponse.setShopByPriceLinks(List.of(
-                "/api/products/price/under-5000",
-                "/api/products/price/under-10000",
-                "/api/products/price/under-15000"
-        ));
+        // Fetch shop by price options
+        List<PriceRange> priceRanges = productService.getPriceRanges();
+        response.put("shopByPrice", priceRanges);
 
-        // URLs for shopping by collections (e.g., Wedding, Festivals)
-        homeResponse.setShopCollectionsLinks(List.of(
-                "/api/products/collections/wedding",
-                "/api/products/collections/festivals"
-        ));
+        // Fetch shop collections
+        List<Collection> collections = productService.getShopCollections();
+        response.put("shopCollections", collections);
 
-        return ResponseEntity.ok(homeResponse);
+        // Fetch featured products
+        List<Product> featuredProducts = productService.getFeaturedProducts();
+        response.put("featuredProducts", featuredProducts);
+
+        return ResponseEntity.ok(response);
     }
 }
