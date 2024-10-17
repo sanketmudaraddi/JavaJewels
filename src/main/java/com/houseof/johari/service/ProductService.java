@@ -185,19 +185,74 @@ public class ProductService {
     }
 
     // Get products by combining multiple filters
-    public List<Product> getProductsByMultipleFilters(String category, String gender, Double price, String material, String occasion) {
-        // This is a simplified example combining category, gender, price, material, and occasion
-        if (price != null && gender != null) {
-            return productRepository.findByCategoryAndGenderAndPriceLessThanEqualAndMaterialAndOccasion(
-                    category, gender, price, material, occasion);
-        } else if (price != null) {
-            return productRepository.findByCategoryAndPriceLessThanEqual(category, price);
-        } else if (gender != null) {
-            return productRepository.findByCategoryAndGender(category, gender);
-        } else {
-            return productRepository.findByCategory(category);
+    public List<Product> filterProducts(List<String> categories, List<String> brands, Double minPrice, Double maxPrice, List<String> materials, List<String> sizes, List<String> colors, Boolean inStock, String priceToggle) {
+        Query query = new Query();
+
+        // Handle multiple categories
+        if (categories != null && !categories.isEmpty()) {
+            query.addCriteria(Criteria.where("category").in(categories));
         }
+
+        // Handle multiple brands
+        if (brands != null && !brands.isEmpty()) {
+            query.addCriteria(Criteria.where("brand").in(brands));
+        }
+
+        // Handle minimum price filter
+        if (minPrice != null) {
+            query.addCriteria(Criteria.where("price").gte(minPrice));
+        }
+
+        // Handle maximum price filter
+        if (maxPrice != null) {
+            query.addCriteria(Criteria.where("price").lte(maxPrice));
+        }
+
+        // Handle multiple materials
+        if (materials != null && !materials.isEmpty()) {
+            query.addCriteria(Criteria.where("material").in(materials));
+        }
+
+        // Handle multiple sizes
+        if (sizes != null && !sizes.isEmpty()) {
+            query.addCriteria(Criteria.where("size").in(sizes));
+        }
+
+        // Handle multiple colors
+        if (colors != null && !colors.isEmpty()) {
+            query.addCriteria(Criteria.where("colors").in(colors));
+        }
+
+        // Handle in-stock filter
+        if (inStock != null) {
+            query.addCriteria(Criteria.where("inStock").is(inStock));
+        }
+
+        // Price toggle handling (low/high/range)
+        if (priceToggle != null) {
+            switch (priceToggle) {
+                case "low":
+                    if (minPrice != null) {
+                        query.addCriteria(Criteria.where("price").gte(minPrice));
+                    }
+                    break;
+                case "high":
+                    if (maxPrice != null) {
+                        query.addCriteria(Criteria.where("price").lte(maxPrice));
+                    }
+                    break;
+                case "range":
+                    if (minPrice != null && maxPrice != null) {
+                        query.addCriteria(Criteria.where("price").gte(minPrice).lte(maxPrice));
+                    }
+                    break;
+            }
+        }
+
+        // Execute the query and return the filtered list of products
+        return mongoTemplate.find(query, Product.class);
     }
+
 
 //    // Get all Best Seller products
 //    public List<Product> getBestSellers() {
