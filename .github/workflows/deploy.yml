@@ -20,8 +20,8 @@ jobs:
 
       - name: Transfer JAR to DigitalOcean Server
         run: |
-          scp -o StrictHostKeyChecking=no ./target/johari-application-0.0.1-SNAPSHOT.jar root@165.232.180.119:/opt/
+          scp -o StrictHostKeyChecking=no ./target/jewels-application-0.0.1-SNAPSHOT.jar root@165.232.180.119:/opt/
 
       - name: Restart Application on Server
         run: |
-          ssh -o StrictHostKeyChecking=no root@165.232.180.119 'pkill -f johari-application-0.0.1-SNAPSHOT.jar || true && nohup java -jar /opt/johari-application-0.0.1-SNAPSHOT.jar &'
+          ssh -o StrictHostKeyChecking=no root@165.232.180.119 'pkill -f jewels-application-0.0.1-SNAPSHOT.jar || true && nohup java -jar /opt/jewellery-application-0.0.1-SNAPSHOT.jar &'
